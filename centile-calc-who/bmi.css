@@ -1,0 +1,172 @@
+main {
+    max-width: 400px;
+    min-width: 320px;
+    margin: 0px auto;
+    box-sizing: border-box;
+    border: 1px solid grey;
+    background-color: #f3f0f0;
+    padding: 12px;
+    box-shadow: 3px 3px #88888830;
+
+}
+
+
+
+.title__section{
+    text-align: center;
+    margin: -12px -12px 20px -12px;
+    padding: 20px 5px 15px 5px;
+    background-color: lightsteelblue;
+}
+
+.title__section-description{
+    color: grey!important;
+}
+
+.input{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: 5px 10px;
+}
+
+input{
+    padding: 5px!important;
+    border-width: 1px!important;
+}
+
+.gender__section label {
+    cursor: pointer;
+}
+
+.inputnumber{
+    width:25%;
+}
+
+.inputdate{
+    width: 30%;
+    cursor: pointer;
+}
+
+#calcbutton{
+    padding:5px;
+}
+
+
+.gender__section{
+    justify-content: center;
+    margin: 20px;
+
+}
+.gender__section label{
+    margin: 0 5px;
+}
+
+.calculate__section, .source__section{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 15px 0px;
+}
+
+.date__section-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 5px 30px;
+
+}
+
+.result__section-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 5px;
+    border: 1px solid grey;
+    padding: 5px;
+    background-color: white;
+}
+
+
+
+
+
+.result__section-result {
+
+    padding: 5px;
+    margin: -5px 0px -5px 5px;
+    width: 50%;
+}
+
+.result__section-title{
+    background-color: lightgrey!important;
+    width: 50%;
+    margin: -5px 0px -5px -5px;
+    padding: 5px;
+}
+
+
+.source__section {
+    background-color: aliceblue;
+    margin: 12px -12px -12px -12px;
+    padding: 10px;
+    font-size: 10px;
+}
+
+
+.error-section {
+    font-size: 16px;
+    text-align: center;
+    border: 1px solid #ed5565;
+    background-color: #fcdfe2;
+    color: #ed5565;
+    margin: 1em 1em;
+    padding: 1em;
+    display: none;
+  }
+  
+
+
+/*the modal date box*/
+.dp-modal{
+    z-index:1000;
+}
+
+   /* The whole box*/
+   .status{
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 15px;
+    margin-right: 10px;
+    cursor: pointer;
+   }
+   
+   .status:before {
+    content: '';
+    background: #fff;
+    border: 2px solid #ddd;
+    display: inline-block;
+    vertical-align: middle;
+    width: 20px;
+    height: 20px;
+    padding: 0px;
+    text-align: center;
+   
+   }
+   
+   .status:before {
+    transform: translate(-6px,-4px);
+   }
+   
+   
+   .status:before {
+    border-radius: 50%;
+   }
+   
+   .status:checked:before {
+    background: #121212;
+   }
+
+
+
+   

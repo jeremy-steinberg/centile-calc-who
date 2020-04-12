@@ -1,0 +1,182 @@
+<html>
+<head>
+
+    <link rel="stylesheet" type="text/css" href="bmi.css">
+</head>    
+
+<body>
+    <main id="calculator" class="bmi__calculator">
+
+   
+    <div class="title__section">
+        <div class="title__section-title"><h2>Paediatric Centiles</h2></div>
+        <div class="title__section-description">Calculate Centiles for BMI, Weight, and Height</div>
+    </div>
+
+    <div class="error-section" id="warning-message"></div>
+    <div class="error-section" id="error-message"></div>
+
+
+    <div class=inputs>
+
+        <div class="age__section form-field input date__section-row">    
+            <label class="form-field-label dateLabel">Date of Birth</label>
+            <input type="text" class="date-of-birth inputdate" id="DOB" value="" placeholder="dd/mm/yyyy"/>
+        </div>
+
+        <div class="dateMeasurement__section form-field input date__section-row">    
+            <label class="form-field-label dateLabel">Date of Measurement</label>
+            <input type="text" class="date-of-measurement inputdate" id="DOM" value="" placeholder="dd/mm/yyyy"/>
+        </div>
+
+    
+    
+        
+        <div name="genderSection" class="gender__section input"> 
+            <b><input name="gender" class="status" type="radio" value="male" id="male" checked="true"> 
+                <label for="male">Male</label></b>
+
+            <b><input name="gender" class="status" type="radio" value="female" id="female"> 
+                <label for="female">Female</label></b>
+        </div>
+
+        
+        <div class="weight__section input">
+            <label>Weight (kg)</label>
+            <input type="number" id="theweight" min="1" max="160" name="theweight" value="" step="any" class="inputnumber"/>
+        </div>
+    
+
+        <div class="height__section input">
+            <label>Height (cm)</label>
+            <input type="number" id="theheight" min="1" max="220" name="theheight" value="" step="any" class="inputnumber"/>
+        </div>
+    
+    </div><!--End of inputs-->
+   
+
+    <div class="calculate__section">
+        <button id="calcbutton">Calculate</button>
+    </div>
+
+    <div class="result__section">
+        <div id="Result"></div>
+
+        <div class=result__section-row>
+            <div class="result__section-title">Age</div>
+            <div id="result-age" class="result__section-result"></div>
+        </div>
+
+        <div class=result__section-row>
+            <div class="result__section-title">BMI</div>
+            <div id="result-bminumber" class="result__section-result"></div>
+        </div>
+
+
+        <div class=result__section-row>
+            <div class="result__section-title">BMI Centile</div>
+            <div id="result-bmi" class="result__section-result"></div>
+        </div>
+
+       
+        <div class=result__section-row>
+            <div class="result__section-title">BMI Interpretation</div>
+            <div id="result-it" class="result__section-result"></div>
+        </div>
+
+
+        <div class=result__section-row>
+            <div class="result__section-title">Weight Centile</div>
+            <div id="result-wt" class="result__section-result"></div>
+            </div>
+
+        <div class=result__section-row>
+            <div class="result__section-title">Height Centile</div>
+            <div id="result-ht" class="result__section-result"></div>
+        </div>
+
+
+        <div class=result__section-row>
+            <div class="result__section-title">Healthy Weight Range</div>
+            <div id="result-wr" class="result__section-result"></div>
+        </div>
+
+
+    </div>
+
+    <div class="source__section">
+        <div>Calculator written by Jeremy Steinberg, <a href="https://www.jackofallorgans.com/contact" target="_blank" rel="noopener noreferrer">contact</a> for suggestions</div>
+    </div>
+
+    </main> <!--End of calculator-->
+
+   
+   </body>
+   <script src="bmi.js"></script>
+   <script src="tiny-date-picker.js"></script>
+   <script src="date-range-picker.js"></script>
+   <script src="http://momentjs.com/downloads/moment.js"></script>
+   <link rel="stylesheet" href="tiny-date-picker.css">
+   <link rel="stylesheet" href="date-range-picker.css">
+
+
+   <script>
+
+
+    const dp = TinyDatePicker('.date-of-birth', {
+
+        // convert to NZ date format
+        format(date) {
+            return date.toLocaleDateString('en-NZ');
+        },
+
+        // parse {string|Date} -> Date is the inverse of format. If you specify one, you probably should specify the other
+        // the default parse function handles whatever the new Date constructor handles. Note that
+        // parse may be passed either a string or a date.
+        parse(str) {
+            var date = new Date(str);
+            return isNaN(date) ? new Date() : date;
+        },
+
+        // 'dp-modal' displays the picker as a modal, 'dp-below' displays the date picker as a dropdown
+        mode: 'dp-modal',
+
+        // set maximum date to Today
+        max: new Date(),
+
+    })
+
+    const dm = TinyDatePicker('.date-of-measurement', {
+
+    // convert to NZ date format
+    format(date) {
+        return date.toLocaleDateString('en-NZ');
+    },
+
+    // parse {string|Date} -> Date is the inverse of format. If you specify one, you probably should specify the other
+    // the default parse function handles whatever the new Date constructor handles. Note that
+    // parse may be passed either a string or a date.
+    parse(str) {
+        var date = new Date(str);
+        return isNaN(date) ? new Date() : date;
+    },
+
+    // 'dp-modal' displays the picker as a modal, 'dp-below' displays the date picker as a dropdown
+    mode: 'dp-modal',
+
+    // set maximum date to Today
+    max: new Date(),
+
+    })
+
+    //add todays date to date of measurement
+    var today = new Date();
+    today = moment(today).format("DD/MM/YYYY");
+    document.getElementById("DOM").value = today;
+
+
+
+  </script>
+
+   </html>
+   
