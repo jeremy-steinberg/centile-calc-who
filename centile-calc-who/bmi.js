@@ -46,8 +46,8 @@ function getGender(){
 //calculate age in days as the difference between date of birth and todays date. note WHO uses value of 30.4375 days to one month
 //returns an array, item 0 is age in days, item 1 is human age as years + months + days
 function calculateAge(){
-  var DOB = document.getElementById('DOB').value; //DOM = date of birth
-  var DOM = document.getElementById('DOM').value; //date of measurement
+  var DOB = document.getElementById('DOB').value; //DOB = date of birth
+  var DOM = document.getElementById('DOM').value; //DOM = date of measurement
 
   //convert DOB - NZ to US formatting to allow for calculations
   var DOB_US = moment(DOB, "DD/MM/YYYY").format("MM/DD/YYYY");
@@ -241,21 +241,28 @@ function displayresult(percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt
   var ordinal_wt = Number.getOrdinalFor((percentile_wt * 100).toFixed(0), true);
   var ordinal_ht = Number.getOrdinalFor((percentile_ht * 100).toFixed(0), true);
   document.getElementById("result-age").innerHTML = calculateAge(0)[1];
-  weight > 0 && height > 0 ? document.getElementById("result-bminumber").innerHTML = bmiNumber : document.getElementById("result-bminumber").innerHTML = "Enter Weight & Height";
-  weight > 0 && height > 0 ? document.getElementById("result-bmi").innerHTML = ordinal_BMI + " (Z-score: " + z_bmi.toFixed(1) + ")" : document.getElementById("result-bmi").innerHTML = "Enter Weight & Height";
-  weight > 0 && height > 0 ? document.getElementById("result-it").innerHTML = interpret_bmi : document.getElementById("result-it").innerHTML = "Enter Weight & Height";
-  weight > 0 ? document.getElementById("result-wt").innerHTML = ordinal_wt + " (Z-score: " + z_wt.toFixed(1) + ")" : document.getElementById("result-wt").innerHTML = "Enter Weight";
-  height > 0 ? document.getElementById("result-ht").innerHTML = ordinal_ht + " (Z-score: " + z_ht.toFixed(1) + ")" : document.getElementById("result-ht").innerHTML = "Enter Height";;
-  weight > 0 ? document.getElementById("result-wr").innerHTML = weightrange : document.getElementById("result-wr").innerHTML = "Enter Weight";
+  //show the results in the result boxes, and grey out options where not relevant
+  weight > 0 && height > 0 ? (document.getElementById("result-bminumber").innerHTML = bmiNumber, document.getElementById("result-bminumber").style.opacity = "1")   : (document.getElementById("result-bminumber").innerHTML = "Enter Weight & Height", document.getElementById("result-bminumber").style.opacity = "0.4");
+  weight > 0 && height > 0 ? (document.getElementById("result-bmi").innerHTML = ordinal_BMI + " (Z-score: " + z_bmi.toFixed(1) + ")", document.getElementById("result-bmi").style.opacity = "1")   : (document.getElementById("result-bmi").innerHTML = "Enter Weight & Height", document.getElementById("result-bmi").style.opacity = "0.4");
+  weight > 0 && height > 0 ? (document.getElementById("result-it").innerHTML = interpret_bmi, document.getElementById("result-it").style.opacity = "1")  : (document.getElementById("result-it").innerHTML = "Enter Weight & Height", document.getElementById("result-it").style.opacity = "0.4");
+  weight > 0 ? (document.getElementById("result-wt").innerHTML = ordinal_wt + " (Z-score: " + z_wt.toFixed(1) + ")", document.getElementById("result-wt").style.opacity = "1") : (document.getElementById("result-wt").innerHTML = "Enter Weight", document.getElementById("result-wt").style.opacity = "0.4");
+  height > 0 ? (document.getElementById("result-ht").innerHTML = ordinal_ht + " (Z-score: " + z_ht.toFixed(1) + ")", document.getElementById("result-ht").style.opacity = "1") : (document.getElementById("result-ht").innerHTML = "Enter Height", document.getElementById("result-ht").style.opacity = "0.4");
+  weight > 0 ? (document.getElementById("result-wr").innerHTML = weightrange, document.getElementById("result-wr").style.opacity = "1") : (document.getElementById("result-wr").innerHTML = "Enter Weight", document.getElementById("result-wr").style.opacity = "0.4");
 
   } else { //if an adult then just show BMI
     document.getElementById("result-age").innerHTML = calculateAge(0)[1];
-    document.getElementById("result-bmi").innerHTML = "centiles for age <20";
-    document.getElementById("result-bminumber").innerHTML = bmiNumber;
-    document.getElementById("result-wt").innerHTML = ordinal_wt = "centiles for age <20";
-    document.getElementById("result-ht").innerHTML = ordinal_ht = "centiles for age <20";
-    document.getElementById("result-it").innerHTML = "Interpretation for age <20";
-    document.getElementById("result-wr").innerHTML = "Weight range for age < 20";
+    document.getElementById("result-bmi").innerHTML = "for age <20";
+    weight > 0 && height > 0 ? (document.getElementById("result-bminumber").innerHTML = bmiNumber, document.getElementById("result-bminumber").style.opacity = "1")   : (document.getElementById("result-bminumber").innerHTML = "Enter Weight & Height", document.getElementById("result-bminumber").style.opacity = "0.4");
+    document.getElementById("result-wt").innerHTML = ordinal_wt = "for age <20";
+    document.getElementById("result-ht").innerHTML = ordinal_ht = "for age <20";
+    document.getElementById("result-it").innerHTML = "for age <20";
+    document.getElementById("result-wr").innerHTML = "for age < 20";
+    document.getElementById("result-bmi").style.opacity = "0.4"
+    document.getElementById("result-wt").style.opacity = "0.4"
+    document.getElementById("result-ht").style.opacity = "0.4"
+    document.getElementById("result-it").style.opacity = "0.4"
+    document.getElementById("result-it").style.opacity = "0.4"
+    document.getElementById("result-wr").style.opacity = "0.4"
   }
 }
 
