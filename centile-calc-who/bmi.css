@@ -1,12 +1,11 @@
 main {
-    max-width: 400px;
-    min-width: 320px;
     margin: 0px auto;
     box-sizing: border-box;
     border: 1px solid grey;
     background-color: #f3f0f0;
     padding: 12px;
     box-shadow: 3px 3px #88888830;
+    width:100%;
 
 }
 
@@ -169,4 +168,7 @@ input{
 
 
 
-   
+   .z-score {
+    font-style: italic;
+    font-size: 0.8rem;
+  }

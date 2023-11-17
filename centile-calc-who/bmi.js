@@ -1,5 +1,4 @@
 //TODO
-//data as JSON??
 //error check: DOB must be earlier than DOM, 
 //add interpretation - visual
 //complete healthy weight range function by researching and finding out what is the WHO healthy weight range.
@@ -13,6 +12,8 @@
 
 const centileData = {};
 
+
+// Change 'data.json' to '/bmi-calculator-data-json' when running on wordpress with my custom plugin.
 const fetchCentileData = async () => {
     try {
         const response = await fetch('data.json');
@@ -27,6 +28,8 @@ const fetchCentileData = async () => {
 };
 
 window.onload = fetchCentileData; // Fetch data when the window loads
+
+
 
   
 /*
@@ -88,10 +91,12 @@ const pluralize = (val, word, plural = word + 's') => {
 };
 
 
+
+
+
 /*
 * 3. CORE CALCULATION FUNCTIONS
 */
-
 
 
 // The two below functions parse the 0-5 year old and 5-19 year old datasets and returns the LMS values in an array.
@@ -177,7 +182,8 @@ const interpretBMI = (age, z_bmi) => {
   } else if (age > 730 && age <= 1857) { // Ages 2 - 5
       return z_bmi > 3 ? "Obese" : z_bmi > 1.35 ? "Overweight" : z_bmi < -3 ? "Severe Thinness" : z_bmi < -2 ? "Thinness" : "Normal";
   } else { // Age < 2
-      return "Not applicable for age < 2";
+      return "N/A for age < 2";
+
   }
 };
 
@@ -188,6 +194,9 @@ const weightRange = (L, M, S) => {
   let healthyWeight = [getMeasurementFromZ(-2, L, M, S), getMeasurementFromZ(1, L, M, S)];
   return healthyWeight[0].toFixed(1) + " - " + healthyWeight[1].toFixed(1) + " kg";
 };
+
+
+
 
 
 /*
@@ -240,7 +249,15 @@ const handleCalculateClick = () => {
   const interpret_bmi = interpretBMI(theAge, z_bmi);
   const weightrange = weightRange(lms_wt[0], lms_wt[1], lms_wt[2]);
 
-  displayResult(percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange);
+
+  // Additional logic to update the chart
+  const age = calculateAge()[0]; // Get age in days
+  const bmi = calculateBMI(getWeight(), getHeight());
+  const centileLines = centileData['bmi_data_WHO_0_5']; // or other relevant data
+
+  updateChart(age, bmi, centileLines);
+
+  displayResult(percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange, humanAge);
 };
 
 //Sets up event listeners for the application.
@@ -249,18 +266,21 @@ const setupEventListeners = () => {
 };
 
 
+
+
 /*
 * 5. DISPLAY AND ERROR HANDLING
 */ 
 
 // Displays calculation results in the user interface
-const displayResult = (percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange) => {
-  document.getElementById("result-bminumber").innerHTML = `BMI: ${calculateBMI(getWeight(), getHeight()).toFixed(1)}`;
-  document.getElementById("result-bmi").innerHTML = `BMI Percentile: ${formatPercentile(percentile_bmi)} (Z-score: ${z_bmi.toFixed(1)})`;
-  document.getElementById("result-wt").innerHTML = `Weight Percentile: ${formatPercentile(percentile_wt)} (Z-score: ${z_wt.toFixed(1)})`;
-  document.getElementById("result-ht").innerHTML = `Height Percentile: ${formatPercentile(percentile_ht)} (Z-score: ${z_ht.toFixed(1)})`;
-  document.getElementById("result-it").innerHTML = `BMI Interpretation: ${interpret_bmi}`;
-  document.getElementById("result-wr").innerHTML = `Healthy Weight Range: ${weightrange}`;
+const displayResult = (percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange, humanAge) => {
+  document.getElementById("result-age").innerHTML = humanAge;
+  document.getElementById("result-bminumber").innerHTML = `${calculateBMI(getWeight(), getHeight()).toFixed(1)}`;
+  document.getElementById("result-bmi").innerHTML = `${formatPercentile(percentile_bmi)}<br><span class="z-score">z-score: ${z_bmi.toFixed(1)}</span>`;
+  document.getElementById("result-wt").innerHTML = `${formatPercentile(percentile_wt)}<br><span class="z-score">z-score: ${z_wt.toFixed(1)}</span>`;
+  document.getElementById("result-ht").innerHTML = `${formatPercentile(percentile_ht)}<br><span class="z-score">z-score: ${z_ht.toFixed(1)}</span>`;
+  document.getElementById("result-it").innerHTML = `${interpret_bmi}`;
+  document.getElementById("result-wr").innerHTML = `${weightrange}`;
 };
 
 // Formats a percentile for display.
@@ -283,4 +303,216 @@ const clearError = () => {
   const errorElement = document.getElementById("error-message");
   errorElement.innerHTML = '';
   errorElement.style.display = 'none';
+};
+
+// Global variable to hold the chart instance
+let bmiChart;
+
+
+/*
+* 6. CHART FUNCTIONS
+*/
+
+// Function to initialize the BMI chart
+function initializeChart() {
+    const ctx = document.getElementById('bmiChart').getContext('2d');
+    bmiChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'BMI Centiles',
+                data: [], // We will populate this later
+                backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                borderColor: 'rgba(0, 123, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    title: {
+                        display: true,
+                        text: 'Age (Days)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'BMI'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Function to update the chart with new data
+function updateChart(age, bmi) {
+  // Get the selected gender
+  const selectedGender = getGender();
+
+  // Determine the dataset to use based on age
+  let centileDataset;
+  if (age <= 1857) { // Age 5 years or below
+      centileDataset = centileData['bmi_data_WHO_0_5'].filter(entry => entry.gender === selectedGender);
+  } else if (age <= 6935) { // Age between 5 and 19 years
+      centileDataset = centileData['bmi_data_WHO_5_19'].filter(entry => entry.gender === selectedGender);
+  } else {
+      console.error("Age out of range for centile data.");
+      return;
+  }
+
+    // Update the x-axis title and ticks based on the age range
+    bmiChart.options.scales.x.title.text = age <= 1857 ? 'Age (Months)' : 'Age (Years)';
+    bmiChart.options.scales.x.ticks = {
+      callback: function(value, index, values) {
+          if (age <= 1857) {
+              const month = Math.round(value / 30.44);
+              return month % 3 === 0 ? month : null; // Show only every 3rd month
+          } else if (age > 1857 && value % 365 === 0) {
+              return value / 365; // Convert days to years
+          }
+      },
+      stepSize: age <= 1857 ? 30.44 * 3 : 365, // Use 3 times the month length for the 0-5 dataset
+      autoSkip: false,
+  };
+  
+
+  // Clear existing datasets except the first one (for centile lines)
+  bmiChart.data.datasets = bmiChart.data.datasets.slice(0, 1);
+
+  // Add patient's BMI data point
+  bmiChart.data.datasets.push({
+      label: 'Patient BMI',
+      data: [{ x: age, y: bmi }],
+      backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      borderColor: 'rgba(255, 99, 132, 1)',
+      borderWidth: 1,
+      type: 'scatter'
+  });
+
+  // Process and add centile lines
+  const centiles = [5, 10, 25, 50, 75, 85, 90, 95]; // Define required centiles
+  centiles.forEach(centile => {
+      const sampledCentileLine = centileDataset.filter((entry, index) => {
+          // Sample the data
+          if (age <= 1857) {
+            return index % 12 === 0;
+          } else if (age <= 6935) {
+            return index % 1 === 0;
+          }
+      }).sort((a, b) => a.age_days - b.age_days) // Sort by age_days
+      .map(entry => {
+          return { x: entry.age_days, y: calculateCentileValue(entry, centile) };
+      });
+
+      bmiChart.data.datasets.push({
+          label: `${centile}th Centile`,
+          data: sampledCentileLine,
+          borderColor: getRandomColor(),
+          borderWidth: 1,
+          pointRadius: 0.1, // Smaller point radius for a dot-like appearance
+          pointHitRadius: 5, // Optional: Increase hit radius for easier interaction
+          tension: 0.6, // Apply line smoothing (0 for no smoothing, 1 for maximum smoothing)
+          showLine: true, // Ensure line is shown
+          fill: false // No fill under the line
+      });
+  });
+
+  bmiChart.update();
+}
+
+
+
+// Modified function to calculate centile value
+function calculateCentileValue(entry, centile) {
+  const zScore = getZScoreFromPercentile(centile / 100);
+  return getMeasurementFromZ(zScore, entry.l, entry.m, entry.s);
+}
+
+
+
+// Modified function to convert a percentile into a Z score
+function getZScoreFromPercentile(percentile) {
+  let lower = -6;
+  let upper = 6;
+  let zScore = 0;
+  let epsilon = 0.0001;
+  
+  while (Math.abs(upper - lower) > epsilon) {
+    zScore = (upper + lower) / 2;
+    const calculatedPercentile = getZPercent(zScore);
+
+    if (calculatedPercentile > percentile) {
+      upper = zScore;
+    } else {
+      lower = zScore;
+    }
+  }
+  return zScore;
+}
+
+
+
+function calculateBMIForZScore(L, M, S, Z) {
+  if (L !== 0) {
+      return M * Math.pow(1 + L * S * Z, 1 / L);
+  } else {
+      return M * Math.exp(S * Z);
+  }
+}
+
+
+function erfcinv(p) {
+  let j = 0;
+  let x = 0;
+  let err = 0;
+  let t = 0;
+  let pp = 0;
+  if (p >= 2) return -100;
+  if (p <= 0) return 100;
+  pp = (p < 1) ? p : 2 - p;
+  t = Math.sqrt(-2 * Math.log(pp / 2));
+  x = -0.70711 * ((2.30753 + t * 0.27061) / (1 + t * (0.99229 + t * 0.04481)) - t);
+  for (j = 0; j < 2; j++) {
+      err = erfc(x) - pp;
+      x += err / (1.12837916709551257 * Math.exp(-Math.pow(x, 2)) - x * err);
+  }
+  return (p < 1) ? x : -x;
+}
+
+function erfc(x) {
+  return 1 - erf(x);
+}
+
+function erf(x) {
+  const a1 =  0.254829592;
+  const a2 = -0.284496736;
+  const a3 =  1.421413741;
+  const a4 = -1.453152027;
+  const a5 =  1.061405429;
+  const p  =  0.3275911;
+  const t = 1 / (1 + p * x);
+  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  return x < 0 ? -y : y;
+}
+
+
+// Function to generate random colors
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+
+// Initialize the chart when the window loads
+window.onload = () => {
+    fetchCentileData();
+    initializeChart();
 };
