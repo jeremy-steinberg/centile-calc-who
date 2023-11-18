@@ -39,12 +39,12 @@ main {
 }
 
 input{
-    padding: 5px!important;
+    padding: 8px!important;
     border-width: 1px!important;
-    cursor:pointer;
+    border-radius:3px;
 }
 
-.gender__section label {
+.gender__section {
     cursor: pointer;
 }
 
@@ -213,6 +213,7 @@ input{
     display: grid;
     grid-template-columns: 1em auto;
     gap: 0.5em;
+    cursor:pointer;
   }
   
 
@@ -240,6 +241,7 @@ input{
     transform: translateY(-0.075em);
     display: grid;
     place-content: center;
+    cursor:pointer;
   }
   
   input[type=radio]::before {

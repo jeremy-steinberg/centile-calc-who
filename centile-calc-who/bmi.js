@@ -3,8 +3,12 @@
 //complete healthy weight range function by researching and finding out what is the WHO healthy weight range.
 //add data points
 //height velocities
-
-
+//Modify labelling, when hovering over a centile line should just show the name of the line
+// Take inspiration from: https://growth.rcpch.ac.uk/
+// Math info to cross reference: https://growth.rcpch.ac.uk/clinician/how-the-api-works
+// Look at using cubic interpolation instead of linear if not close to reference standard for L, M, S
+// Add correction for gestation
+// Zoom function for charts
 /*
 * 1. DATA FETCHING AND INITIALIZATION
 */
@@ -38,8 +42,9 @@ window.onload = fetchCentileData; // Fetch data when the window loads
 // @returns {string} The selected gender.
 const getGender = () => document.querySelector('input[name="gender"]:checked').value;
 
-// Calculates the age in days and human-readable format based on DOB and DOM.
-// @returns {[number, string]} Age in days and human-readable age.
+// Calculates the age in days, human-readable format, and decimal years based on DOB and DOM.
+// @returns {[number, string, number]} Age in days and human-readable age.
+// The decimalAge accounts for leap years.
 const calculateAge = () => {
   const DOBValue = document.getElementById('DOB').value;
   const DOMValue = document.getElementById('DOM').value;
@@ -48,7 +53,9 @@ const calculateAge = () => {
   const DOM = moment(DOMValue, "DD/MM/YYYY");
 
   const ageInDays = DOM.diff(DOB, 'days');
-  return [ageInDays, convertToYearsOld(DOB, DOM)];
+  const decimalAge = ageInDays / 365.25;
+  
+  return [ageInDays, convertToYearsOld(DOB, DOM), decimalAge];
 };
 
 //Converts age from date format to a human-readable format (years, months, days).
@@ -180,6 +187,18 @@ const factorial = (n) => {
   return fact;
 };
 
+//Cubic Interpolation (not used)
+// Currently the tool uses nearest age for L, M, and S values, while the reference standard suggests using cubic interpolation if your data points do not fall exactly on the given ages. 
+// Could apply cubic interpolation to get accurate values whenever need L, M, and S values
+// Would need to handle situation where age falls close to reference threshold, and use linear interpolation
+const cubicInterpolation = (t, t0, t1, t2, t3, y0, y1, y2, y3) => {
+  return (y0 * (t - t1) * (t - t2) * (t - t3)) / ((t0 - t1) * (t0 - t2) * (t0 - t3))
+       + (y1 * (t - t0) * (t - t2) * (t - t3)) / ((t1 - t0) * (t1 - t2) * (t1 - t3))
+       + (y2 * (t - t0) * (t - t1) * (t - t3)) / ((t2 - t0) * (t2 - t1) * (t2 - t3))
+       + (y3 * (t - t0) * (t - t1) * (t - t2)) / ((t3 - t0) * (t3 - t1) * (t3 - t2));
+};
+
+
 
 //Calculates measurement from a Z score.
 //@param {number} z - The Z score.
@@ -193,7 +212,7 @@ const getMeasurementFromZ = (z, L, M, S) => {
 
 
 
-// Modified function to calculate centile value
+//  function to calculate centile value
 function calculateCentileValue(entry, centile) {
   const zScore = getZScoreFromPercentile(centile / 100);
   return getMeasurementFromZ(zScore, entry.l, entry.m, entry.s);
@@ -248,13 +267,14 @@ const pluralize = (val, word, plural = word + 's') => {
 const handleCalculateClick = () => {
   clearError();  // Clear any previous errors
 
-  const [theAge, humanAge] = calculateAge();
+  const [ageInDays, humanAge, decimalAge] = calculateAge();
+  const decimalAgeYears = decimalAge * 365.25;
   const weight = getWeight();
   const height = getHeight();
   const BMI = calculateBMI(weight, height);
 
   // Error checking
-  if (!theAge || theAge < 0) {
+  if (!ageInDays || ageInDays < 0) {
     showError("Invalid Date of Birth or Date of Measurement.");
     return;
   }
@@ -273,15 +293,15 @@ const handleCalculateClick = () => {
   }
 
   let lms_bmi, lms_wt, lms_ht;
-  if (theAge < 1857) { // Age 0-5 years
-    lms_bmi = getLMSValues_0_5('bmi_data_WHO_0_5', theAge, gender);
-    lms_wt = getLMSValues_0_5('weight_data_WHO_0_5', theAge, gender);
-    lms_ht = getLMSValues_0_5('height_data_WHO_0_5', theAge, gender);
-  } else if (theAge <= 6970) { // Age 5-19 years
-    const theAgeMonths = Math.ceil(theAge / 30.4375);
-    lms_bmi = getLMSValues_5_19('bmi_data_WHO_5_19', theAgeMonths, gender);
-    lms_wt = getLMSValues_5_19('weight_data_WHO_5_19', theAgeMonths, gender);
-    lms_ht = getLMSValues_5_19('height_data_WHO_5_19', theAgeMonths, gender);
+  if (decimalAgeYears < 5 * 365.25) { // Age 0-5 years
+    lms_bmi = getLMSValues_0_5('bmi_data_WHO_0_5', ageInDays, gender);
+    lms_wt = getLMSValues_0_5('weight_data_WHO_0_5', ageInDays, gender);
+    lms_ht = getLMSValues_0_5('height_data_WHO_0_5', ageInDays, gender);
+  } else if (decimalAgeYears <= 19 * 365.25) { // Age 5-19 years
+    const ageInMonths = Math.ceil(ageInDays / 30.4375);
+    lms_bmi = getLMSValues_5_19('bmi_data_WHO_5_19', ageInMonths, gender);
+    lms_wt = getLMSValues_5_19('weight_data_WHO_5_19', ageInMonths, gender);
+    lms_ht = getLMSValues_5_19('height_data_WHO_5_19', ageInMonths, gender);
   } else {
     showError("Age out of range.");
     return;
@@ -295,11 +315,11 @@ const handleCalculateClick = () => {
   const percentile_wt = getPercentileFromZScore(z_wt);
   const percentile_ht = getPercentileFromZScore(z_ht);
 
-  const interpret_bmi = interpretBMI(theAge, z_bmi);
+  const interpret_bmi = interpretBMI(ageInDays, z_bmi);
   const weightrange = weightRange(lms_wt[0], lms_wt[1], lms_wt[2]);
 
   // Update the charts with the new data
-  updateCharts(theAge, BMI, weight, height);
+  updateCharts(ageInDays, BMI, weight, height);
 
   // Display the results
   displayResult(percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange, humanAge);
@@ -518,7 +538,7 @@ function processAndUpdateChartData(age, measurement, centileDataset, chartId) {
   });
 
   // Process and add centile lines
-  const centiles = [1, 5, 10, 25, 50, 75, 85, 90, 95, 99]; // Define required centiles
+  const centiles = [0.4, 2, 9, 25, 50, 75, 91, 98, 99.6]; // Define required centiles
   centiles.forEach(centile => {
       const sampledCentileLine = centileDataset.filter((entry, index) => {
           // Sample the data (every 12th entry for age <= 5 years, every entry for age > 5 years)
