@@ -90,6 +90,12 @@ const pluralize = (val, word, plural = word + 's') => {
   return _pluralize(val, word, plural);
 };
 
+// Function to get ordinal e.g. 1st instead of 1th
+const getOrdinalFor = intNum => {
+  const ordinals = ["th", "st", "nd", "rd"];
+  const v = intNum % 100;
+  return intNum + (ordinals[(v - 20) % 10] || ordinals[v] || ordinals[0]);
+};
 
 
 
@@ -287,8 +293,11 @@ const displayResult = (percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt
 // @param {number} percentile - The percentile to format.
 // @returns {string} Formatted percentile.
 const formatPercentile = (percentile) => {
+  return `${getOrdinalFor((percentile * 100).toFixed(0))} percentile`;
   return `${(percentile * 100).toFixed(0)}th percentile`;
 };
+
+
 
 //Displays an error message.
 //@param {string} message - The error message to display.
@@ -394,7 +403,7 @@ function updateChart(age, bmi) {
   });
 
   // Process and add centile lines
-  const centiles = [5, 10, 25, 50, 75, 85, 90, 95]; // Define required centiles
+  const centiles = [1, 5, 10, 25, 50, 75, 85, 90, 95, 99]; // Define required centiles
   centiles.forEach(centile => {
       const sampledCentileLine = centileDataset.filter((entry, index) => {
           // Sample the data
@@ -408,13 +417,21 @@ function updateChart(age, bmi) {
           return { x: entry.age_days, y: calculateCentileValue(entry, centile) };
       });
 
+      let centileBorderWidth = 1; // Default border width
+      let centileColor = getRandomColor();
+      if (centile === 50) {
+          centileBorderWidth = 3; // Set border width for 50th centile
+          centileColor = "green"; // Set color for 50th centile
+      }
+
+
       bmiChart.data.datasets.push({
-          label: `${centile}th Centile`,
+          label: `${getOrdinalFor(centile)} Centile`,
           data: sampledCentileLine,
-          borderColor: getRandomColor(),
-          borderWidth: 1,
+          borderColor: centileColor,
+          borderWidth: centileBorderWidth,
           pointRadius: 0.1, // Smaller point radius for a dot-like appearance
-          pointHitRadius: 5, // Optional: Increase hit radius for easier interaction
+          pointHitRadius: 10, // Optional: Increase hit radius for easier interaction
           tension: 0.6, // Apply line smoothing (0 for no smoothing, 1 for maximum smoothing)
           showLine: true, // Ensure line is shown
           fill: false // No fill under the line
