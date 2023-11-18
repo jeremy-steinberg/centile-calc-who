@@ -6,9 +6,9 @@
 //Modify labelling, when hovering over a centile line should just show the name of the line
 // Take inspiration from: https://growth.rcpch.ac.uk/
 // Math info to cross reference: https://growth.rcpch.ac.uk/clinician/how-the-api-works
-// Look at using cubic interpolation instead of linear if not close to reference standard for L, M, S
 // Add correction for gestation
 // Zoom function for charts
+// Colors of lines - if manage to label things properly, then make pink for girls and blue for boys and alternate solid and dashed lines
 /*
 * 1. DATA FETCHING AND INITIALIZATION
 */
@@ -126,6 +126,7 @@ const weightRange = (L, M, S) => {
 
 
 // The two below functions parse the 0-5 year old and 5-19 year old datasets and returns the LMS values in an array.
+// It uses cubic interpolation if not exactly at a reference point.
 // @param {string} dataType - The data type (e.g., 'bmi_data_WHO_0_5').
 // @param {number} age_days - Age in days.
 // @param {string} gender - Gender ('male' or 'female').
@@ -133,14 +134,55 @@ const weightRange = (L, M, S) => {
 const getLMSValues_0_5 = (dataType, age_days, gender) => {
   const array = centileData[dataType];
   const entry = array.find(item => item.gender === gender && item.age_days === age_days);
-  return entry ? [entry.l, entry.m, entry.s] : [null, null, null];
+
+  if (entry) {
+    return [entry.l, entry.m, entry.s];
+  } else {
+    const closestAges = array.filter(item => item.gender === gender)
+      .map(item => item.age_days)
+      .sort((a, b) => Math.abs(age_days - a) - Math.abs(age_days - b))
+      .slice(0, 4);
+
+    const [t0, t1, t2, t3] = closestAges;
+    const [y0_l, y0_m, y0_s] = getLMS(dataType, t0, gender);
+    const [y1_l, y1_m, y1_s] = getLMS(dataType, t1, gender);
+    const [y2_l, y2_m, y2_s] = getLMS(dataType, t2, gender);
+    const [y3_l, y3_m, y3_s] = getLMS(dataType, t3, gender);
+
+    const l = cubicInterpolation(age_days, t0, t1, t2, t3, y0_l, y1_l, y2_l, y3_l);
+    const m = cubicInterpolation(age_days, t0, t1, t2, t3, y0_m, y1_m, y2_m, y3_m);
+    const s = cubicInterpolation(age_days, t0, t1, t2, t3, y0_s, y1_s, y2_s, y3_s);
+
+    return [l, m, s];
+  }
 };
 
 const getLMSValues_5_19 = (dataType, age_months, gender) => {
   const array = centileData[dataType];
   const entry = array.find(item => item.gender === gender && item.age_months === age_months);
-  return entry ? [entry.l, entry.m, entry.s] : [null, null, null];
+
+  if (entry) {
+    return [entry.l, entry.m, entry.s];
+  } else {
+    const closestAges = array.filter(item => item.gender === gender)
+      .map(item => item.age_months)
+      .sort((a, b) => Math.abs(age_months - a) - Math.abs(age_months - b))
+      .slice(0, 4);
+
+    const [t0, t1, t2, t3] = closestAges;
+    const [y0_l, y0_m, y0_s] = getLMS(dataType, t0, gender);
+    const [y1_l, y1_m, y1_s] = getLMS(dataType, t1, gender);
+    const [y2_l, y2_m, y2_s] = getLMS(dataType, t2, gender);
+    const [y3_l, y3_m, y3_s] = getLMS(dataType, t3, gender);
+
+    const l = cubicInterpolation(age_months, t0, t1, t2, t3, y0_l, y1_l, y2_l, y3_l);
+    const m = cubicInterpolation(age_months, t0, t1, t2, t3, y0_m, y1_m, y2_m, y3_m);
+    const s = cubicInterpolation(age_months, t0, t1, t2, t3, y0_s, y1_s, y2_s, y3_s);
+
+    return [l, m, s];
+  }
 };
+
 
 //Calculates the Z score based on the measurement and LMS values.
 //@param {number} measurement - The measurement (e.g., BMI, weight, height).
@@ -387,15 +429,15 @@ const displayResult = (percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt
 
   // Update BMI results
   document.getElementById("result-bminumber").innerHTML = `${calculateBMI(getWeight(), getHeight()).toFixed(1)}`;
-  document.getElementById("result-bmi").innerHTML = `${formatPercentile(percentile_bmi)}<br><span class="z-score">z-score: ${z_bmi.toFixed(1)}</span>`;
+  document.getElementById("result-bmi").innerHTML = `${formatPercentile(percentile_bmi)}<br><span class="z-score">z-score: ${z_bmi.toFixed(3)}</span>`;
   document.getElementById("result-it").innerHTML = `${interpret_bmi}`;
 
   // Update weight results
-  document.getElementById("result-wt").innerHTML = `${formatPercentile(percentile_wt)}<br><span class="z-score">z-score: ${z_wt.toFixed(1)}</span>`;
+  document.getElementById("result-wt").innerHTML = `${formatPercentile(percentile_wt)}<br><span class="z-score">z-score: ${z_wt.toFixed(3)}</span>`;
   document.getElementById("result-wr").innerHTML = `${weightrange}`;
 
   // Update height results
-  document.getElementById("result-ht").innerHTML = `${formatPercentile(percentile_ht)}<br><span class="z-score">z-score: ${z_ht.toFixed(1)}</span>`;
+  document.getElementById("result-ht").innerHTML = `${formatPercentile(percentile_ht)}<br><span class="z-score">z-score: ${z_ht.toFixed(3)}</span>`;
 };
 
 
