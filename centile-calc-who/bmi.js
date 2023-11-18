@@ -1,7 +1,8 @@
 //TODO
 
 //complete healthy weight range function by researching and finding out what is the WHO healthy weight range.
-//graphing of weight and height centile
+//add data points
+//height velocities
 
 
 /*

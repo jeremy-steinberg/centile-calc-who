@@ -1,8 +1,14 @@
+:root {
+    --form-control-color: #007bff;
+    --title-background: lightsteelblue;
+    --container-background: #f3f0f0;
+  }
+
 main {
     margin: 0px auto;
     box-sizing: border-box;
     font-family:'Helvetica';
-    background-color: #f3f0f0;
+    background-color: var(--container-background);
     padding: 12px;
     box-shadow: 3px 3px 3px #88888830;
     width:100%;
@@ -14,7 +20,7 @@ main {
     text-align: center;
     margin: -12px -12px 20px -12px;
     padding: 20px 5px 15px 5px;
-    background-color: lightsteelblue;
+    background-color: var(--title-background);
 }
 
 .subHeading{
@@ -35,6 +41,7 @@ main {
 input{
     padding: 5px!important;
     border-width: 1px!important;
+    cursor:pointer;
 }
 
 .gender__section label {
@@ -134,40 +141,6 @@ input{
     z-index:1000;
 }
 
-   /* The whole box*/
-   .status{
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 15px;
-    margin-right: 10px;
-    cursor: pointer;
-   }
-   
-   .status:before {
-    content: '';
-    background: #fff;
-    border: 2px solid #ddd;
-    display: inline-block;
-    vertical-align: middle;
-    width: 20px;
-    height: 20px;
-    padding: 0px;
-    text-align: center;
-   
-   }
-   
-   .status:before {
-    transform: translate(-6px,-4px);
-   }
-   
-   
-   .status:before {
-    border-radius: 50%;
-   }
-   
-   .status:checked:before {
-    background: #121212;
-   }
 
 
 
@@ -222,3 +195,70 @@ input{
     background-color: #007bff;
     color:white;
 }
+
+
+  
+
+  form {
+    display: grid;
+    place-content: center;
+    min-height: 100vh;
+  }
+  
+  .form-control {
+    font-family: system-ui, sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1.1;
+    display: grid;
+    grid-template-columns: 1em auto;
+    gap: 0.5em;
+  }
+  
+
+  
+  .form-control:focus-within {
+    color: var(--form-control-color);
+  }
+  
+  input[type=radio] {
+    /* Add if not using autoprefixer */
+    -webkit-appearance: none;
+    /* Remove most all native input styles */
+    -moz-appearance: none;
+         appearance: none;
+    /* For iOS < 15 */
+    background-color: var(--form-background);
+    /* Not removed via appearance */
+    margin: 0;
+    font: inherit;
+    color: currentColor;
+    width: 1.15em;
+    height: 1.15em;
+    border: 0.15em solid currentColor;
+    border-radius: 50%;
+    transform: translateY(-0.075em);
+    display: grid;
+    place-content: center;
+  }
+  
+  input[type=radio]::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em var(--form-control-color);
+    /* Windows High Contrast Mode */
+    background-color: CanvasText;
+  }
+  
+  input[type=radio]:checked::before {
+    transform: scale(1);
+  }
+  
+  input[type=radio]:focus {
+    outline: max(2px, 0.15em) solid currentColor;
+    outline-offset: max(2px, 0.15em);
+  }
