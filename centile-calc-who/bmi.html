@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 
@@ -103,10 +104,20 @@
 
 
     </div>
+    <h3 class="subHeading">Centile Charts</h3>
+    <div class="tabs">
+        <button class="tab-button" onclick="switchTab('bmi')">BMI Centile</button>
+        <button class="tab-button" onclick="switchTab('weight')">Weight Centile</button>
+        <button class="tab-button" onclick="switchTab('height')">Height Centile</button>
+      </div>
+      <div class="chart__section">
+        <canvas id="bmiChart" class="chart-canvas active"></canvas>
+        <canvas id="weightChart" class="chart-canvas" style="display:none"></canvas>
+        <canvas id="heightChart" class="chart-canvas" style="display:none"></canvas>
+      </div>
+      
+      
 
-    <div class="chart__section">
-        <canvas id="bmiChart"></canvas>
-    </div>
     
 
     <div class="source__section">

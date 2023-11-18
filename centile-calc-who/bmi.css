@@ -1,21 +1,24 @@
 main {
     margin: 0px auto;
     box-sizing: border-box;
-    border: 1px solid grey;
+    font-family:'Helvetica';
     background-color: #f3f0f0;
     padding: 12px;
-    box-shadow: 3px 3px #88888830;
+    box-shadow: 3px 3px 3px #88888830;
     width:100%;
+    border-radius:8px;
 
 }
-
-
 
 .title__section{
     text-align: center;
     margin: -12px -12px 20px -12px;
     padding: 20px 5px 15px 5px;
     background-color: lightsteelblue;
+}
+
+.subHeading{
+    text-align:center;
 }
 
 .title__section-description{
@@ -172,3 +175,50 @@ input{
     font-style: italic;
     font-size: 0.8rem;
   }
+
+/* Base styling for the tabs and chart section */
+.tabs {
+    margin-bottom: 20px;
+    background-color: #cac7c7;
+}
+
+.tab-button, #calcbutton {
+    background-color: #cac7c7;
+    color: white; /* White text for better readability */
+    border: none;
+    outline: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    color:black;
+}
+
+.tab-button:hover, #calcbutton:hover {
+    background-color: #0056b3; /* Darker shade on hover for interactive feel */
+    color:white;
+    
+}
+
+/* Active tab styling could be added here */
+
+.chart__section {
+    text-align: center;
+}
+
+/* Styling for the canvases */
+.chart-canvas {
+    width: 100%; /* Responsive width */
+    border: 1px solid #ddd; /* Border for visibility */
+    margin: 0 auto; /* Centering the canvas */
+}
+
+/* Media queries for responsive design can be added here */
+
+.tab-button {
+    cursor: pointer;
+}
+
+.tab-button.active {
+    background-color: #007bff;
+    color:white;
+}
