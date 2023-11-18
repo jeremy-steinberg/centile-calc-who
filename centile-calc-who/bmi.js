@@ -495,6 +495,8 @@ function initializeChart(chartId, label) {
           }]
       },
       options: {
+          responsive: true, // Enable responsive settings
+          maintainAspectRatio: false,
           scales: {
               x: {
                   type: 'linear',
@@ -608,6 +610,8 @@ function processAndUpdateChartData(age, measurement, centileDataset, chartId) {
 
   chart.update(); // Update the chart with new data
 }
+
+
 
 
 

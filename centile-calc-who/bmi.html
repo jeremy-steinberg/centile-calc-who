@@ -113,14 +113,13 @@
         <canvas id="heightChart" class="chart-canvas" style="display:none"></canvas>
       </div>
       
-      
-
-    
+   
 
     <div class="source__section">
         <div>Calculator coded by Jeremy Steinberg, <a href="https://www.jackofallorgans.com/contact" target="_blank" rel="noopener noreferrer">contact</a> for suggestions</div>
     </div>
 
+    
     </main> <!--End of calculator-->
 
       <script src="bmi.js"></script>
@@ -128,67 +127,10 @@
    <script src="tiny-date-picker.js"></script>
    <script src="date-range-picker.js"></script>
    <script src="http://momentjs.com/downloads/moment.js"></script>
+   <script src="script.js"></script>
    <link rel="stylesheet" href="tiny-date-picker.css">
    <link rel="stylesheet" href="date-range-picker.css">
 
-
-   <script>
-
-
-    const dp = TinyDatePicker('.date-of-birth', {
-
-        // convert to NZ date format
-        format(date) {
-            return date.toLocaleDateString('en-NZ');
-        },
-
-        // parse {string|Date} -> Date is the inverse of format. If you specify one, you probably should specify the other
-        // the default parse function handles whatever the new Date constructor handles. Note that
-        // parse may be passed either a string or a date.
-        parse(str) {
-            var date = new Date(str);
-            return isNaN(date) ? new Date() : date;
-        },
-
-        // 'dp-modal' displays the picker as a modal, 'dp-below' displays the date picker as a dropdown
-        mode: 'dp-modal',
-
-        // set maximum date to Today
-        max: new Date(),
-
-    })
-
-    const dm = TinyDatePicker('.date-of-measurement', {
-
-    // convert to NZ date format
-    format(date) {
-        return date.toLocaleDateString('en-NZ');
-    },
-
-    // parse {string|Date} -> Date is the inverse of format. If you specify one, you probably should specify the other
-    // the default parse function handles whatever the new Date constructor handles. Note that
-    // parse may be passed either a string or a date.
-    parse(str) {
-        var date = new Date(str);
-        return isNaN(date) ? new Date() : date;
-    },
-
-    // 'dp-modal' displays the picker as a modal, 'dp-below' displays the date picker as a dropdown
-    mode: 'dp-modal',
-
-    // set maximum date to Today
-    max: new Date(),
-
-    })
-
-    //add todays date to date of measurement
-    var today = new Date();
-    today = moment(today).format("DD/MM/YYYY");
-    document.getElementById("DOM").value = today;
-
-
-
-  </script>
    </body>
    </html>
    

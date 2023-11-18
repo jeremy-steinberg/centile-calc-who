@@ -183,6 +183,7 @@ input{
     width: 100%; /* Responsive width */
     border: 1px solid #ddd; /* Border for visibility */
     margin: 0 auto; /* Centering the canvas */
+    min-height:400px;
 }
 
 /* Media queries for responsive design can be added here */
