@@ -7,7 +7,7 @@
 // Take inspiration from: https://growth.rcpch.ac.uk/
 // Math info to cross reference: https://growth.rcpch.ac.uk/clinician/how-the-api-works
 // Add correction for gestation
-// Zoom function for charts
+// Zoom and pan function for charts
 // Colors of lines - if manage to label things properly, then make pink for girls and blue for boys and alternate solid and dashed lines
 /*
 * 1. DATA FETCHING AND INITIALIZATION
@@ -113,12 +113,57 @@ const interpretBMI = (age, z_bmi) => {
 };
 
 
-//output the healthy weight range (note not BMI range)
-//need to find out what is determined to be a healthy weight range.
+// Function to output the healthy weight range and corresponding z-score range (5-85th centiles), not accounting for height
 const weightRange = (L, M, S) => {
-  let healthyWeight = [getMeasurementFromZ(-2, L, M, S), getMeasurementFromZ(1, L, M, S)];
-  return healthyWeight[0].toFixed(1) + " - " + healthyWeight[1].toFixed(1) + " kg";
+  // Calculate the weights for the 5th and 85th percentiles
+  let healthyWeight = [
+    getMeasurementFromZ(getZScoreFromPercentile(0.05), L, M, S), 
+    getMeasurementFromZ(getZScoreFromPercentile(0.85), L, M, S)
+  ];
+
+  // Format and return the weight range and centile range
+  return healthyWeight[0].toFixed(1) + " - " + healthyWeight[1].toFixed(1) + " kg" +
+    "<br><span class='centile-range'>Using centile range: 5th to 85th</span>";
 };
+
+//Calculate healthy weight range for child's height
+const healthyWeightRange = (L, M, S, height) => {
+  let bmi5th = getMeasurementFromZ(getZScoreFromPercentile(0.02), L, M, S);
+  let bmi85th = getMeasurementFromZ(getZScoreFromPercentile(0.91), L, M, S);
+
+  let weight5th = bmi5th * (height / 100) ** 2;
+  let weight85th = bmi85th * (height / 100) ** 2;
+
+  return weight5th.toFixed(1) + " - " + weight85th.toFixed(1) + " kg" +
+  "<br><span class='centile-range'>Using BMI centile range: 2nd to 91st</span>";
+};
+
+
+
+
+function toggleInfoBar() {
+  var infoBar = document.getElementById("infoBar");
+  var toggleButton = document.querySelector("button[onclick='toggleInfoBar()']");
+  var toggleIcon = document.getElementById("toggleIcon");
+
+  // Define the SVG icons for open and close states
+  var openIcon = '<svg style="width: 20px; height: 7px; padding-left: 5px;" viewBox="0 0 12 8"><polygon points="1.4,7.4 0,6 6,0 12,6 10.6,7.4 6,2.8" fill="black"></polygon></svg>';
+  var closeIcon = '<svg style="width: 20px; height: 7px; padding-left: 5px;" viewBox="0 0 12 8"><path d="M1.4.6L0 2l6 6 6-6L10.6.6 6 5.2" fill-rule="nonzero" fill="#fff"></path></svg>';
+
+  if (infoBar.style.display === "none") {
+      infoBar.style.display = "block";
+      toggleIcon.innerHTML = closeIcon; // Set to close icon when opened
+      toggleButton.classList.remove("closedButton");
+      toggleButton.classList.add("openButton");
+  } else {
+      infoBar.style.display = "none";
+      toggleIcon.innerHTML = openIcon; // Set to open icon when closed
+      toggleButton.classList.remove("openButton");
+      toggleButton.classList.add("closedButton");
+  }
+}
+
+
 
 /*
 * 3. CORE CALCULATION FUNCTIONS
@@ -195,7 +240,7 @@ const getZScoreFromLMS = (measurement, L, M, S) => {
 };
 
 
-// Converts a Z score to a percentile.
+// Converts a Z score to a percentile (fraction of 1, e.g. 0.5, so 50th centile is represented as 0.5).
 // @param {number} z - The Z score.
 // @returns {number} The percentile.
 
@@ -304,7 +349,6 @@ const pluralize = (val, word, plural = word + 's') => {
 * 4. EVENT HANDLERS
 */
 
-//Handles the click event on the Calculate button.
 // Handles the click event on the Calculate button.
 const handleCalculateClick = () => {
   clearError();  // Clear any previous errors
@@ -349,6 +393,11 @@ const handleCalculateClick = () => {
     return;
   }
 
+
+
+
+
+
   const z_bmi = getZScoreFromLMS(BMI, lms_bmi[0], lms_bmi[1], lms_bmi[2]);
   const z_wt = getZScoreFromLMS(weight, lms_wt[0], lms_wt[1], lms_wt[2]);
   const z_ht = getZScoreFromLMS(height, lms_ht[0], lms_ht[1], lms_ht[2]);
@@ -358,7 +407,12 @@ const handleCalculateClick = () => {
   const percentile_ht = getPercentileFromZScore(z_ht);
 
   const interpret_bmi = interpretBMI(ageInDays, z_bmi);
-  const weightrange = weightRange(lms_wt[0], lms_wt[1], lms_wt[2]);
+  
+  //alternate approach to calculate healthy weight range without taking into account height
+  //const weightrange = weightRange(lms_wt[0], lms_wt[1], lms_wt[2]);
+
+  //calculate healthy weight range based on height
+  const weightrange = healthyWeightRange(lms_bmi[0], lms_bmi[1], lms_bmi[2], height);
 
   // Update the charts with the new data
   updateCharts(ageInDays, BMI, weight, height);

@@ -1,6 +1,5 @@
 :root {
     --form-control-color: #007bff;
-    --title-background: lightsteelblue;
     --container-background: #f3f0f0;
   }
 
@@ -20,11 +19,11 @@ main {
     text-align: center;
     margin: -12px -12px 20px -12px;
     padding: 20px 5px 15px 5px;
-    background-color: var(--title-background);
 }
 
 .subHeading{
     text-align:center;
+    margin: 1.5rem;
 }
 
 .title__section-description{
@@ -65,6 +64,7 @@ input{
 .gender__section{
     justify-content: center;
     margin: 20px;
+    gap:40px;
 
 }
 .gender__section label{
@@ -144,7 +144,7 @@ input{
 
 
 
-   .z-score {
+   .z-score, .centile-range {
     font-style: italic;
     font-size: 0.8rem;
   }
@@ -155,7 +155,7 @@ input{
     background-color: #cac7c7;
 }
 
-.tab-button, #calcbutton {
+.tab-button, #calcbutton, .closedButton, .openButton {
     background-color: #cac7c7;
     color: white; /* White text for better readability */
     border: none;
@@ -164,12 +164,28 @@ input{
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
     color:black;
+
+}
+
+
+.openButton {
+    color:white;
+    background-color:#007bff;
+  }
+
+.closedButton, .openButton {
+    width:100%;
+    margin-bottom:1rem;
 }
 
 .tab-button:hover, #calcbutton:hover {
     background-color: #0056b3; /* Darker shade on hover for interactive feel */
     color:white;
     
+}
+
+.closedButton:hover, .openButton:hover{
+    background-color: #0056b3;
 }
 
 /* Active tab styling could be added here */
@@ -264,4 +280,33 @@ input{
   input[type=radio]:focus {
     outline: max(2px, 0.15em) solid currentColor;
     outline-offset: max(2px, 0.15em);
+  }
+
+
+  /* Info Bar Styles */
+
+
+/* Hidden Class */
+.hidden {
+    display: none;
+}
+
+/* Visible Class */
+.visible {
+    display: block;
+}
+/* Info Bar Styles */
+#infoBar {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 1.5rem;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+    display: none; /* Hide by default */
+}
+
+#infoBar ul {
+    padding-bottom: 0;
+    line-height:1.5rem;
   }

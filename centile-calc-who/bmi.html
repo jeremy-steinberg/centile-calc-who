@@ -10,9 +10,26 @@
 
    
     <div class="title__section">
-        <div class="title__section-title"><h2>Paediatric Centiles</h2></div>
+        <div class="title__section-title"><h1>Paediatric Centiles</h1></div>
         <div class="title__section-description">Calculate Centiles for BMI, Weight, and Height</div>
     </div>
+
+    <button class="closedButton" onclick="toggleInfoBar()">
+        More Info <span id="toggleIcon"><svg style="width: 20px; height: 7px; padding-left: 5px;" viewBox="0 0 12 8"><polygon points="1.4,7.4 0,6 6,0 12,6 10.6,7.4 6,2.8" fill="black"></polygon></svg></span>
+    </button>
+    
+    <div id="infoBar" style="display: none;">
+            <ul>
+                <li>There are no normative data for the NZ population. So this uses the standard WHO data in which NZ was not a participating country</li>
+                <li>Z scores and centiles are calculated using associated lean, mean, and skew for age. If there is no data point for the age then cubic interpolation is used (Cole method).</li>
+                <li>Age is normalised to decimal age in years to account for leap years</li>
+                <li>The reason for the drop in height and BMI curves at 24 months is due to data changing from lying (length) to standing (height).</li>
+                <li>Being born at 37-42 weeks gestation is generally considered "term" and so just put in the birth date. However some prefer to adjust for gestation up to around 8 months.</li>
+                <li>This tool doesn't currently support calculations for preterm infants (born before 37 weeks) as the WHO study excluded them.</li>
+                <li>References: <a href="https://www.tewhatuora.govt.nz/for-the-health-sector/specific-life-stage-health-information/child-health/well-child-tamariki-programme/growth-charts">NZ-WHO</a>, <a href="https://www.who.int/tools/child-growth-standards">WHO Child Growth Standards</a>, <a href="https://growth.rcpch.ac.uk/clinician/how-the-api-works#prematurity-and-term">RCPH Info</a></li>
+            </ul>
+    </div>
+
 
     <div class="error-section" id="warning-message"></div>
     <div class="error-section" id="error-message"></div>
@@ -56,6 +73,7 @@
     <div class="calculate__section">
         <button id="calcbutton">Calculate</button>
     </div>
+    
 
     <div class="result__section">
         <div id="Result"></div>
@@ -101,7 +119,7 @@
 
 
     </div>
-    <h3 class="subHeading">Centile Charts</h3>
+    <h2 class="subHeading">Centile Charts</h2>
     <div class="tabs">
         <button class="tab-button" onclick="switchTab('bmi')">BMI Centile</button>
         <button class="tab-button" onclick="switchTab('weight')">Weight Centile</button>
@@ -124,10 +142,11 @@
 
       <script src="bmi.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
    <script src="tiny-date-picker.js"></script>
    <script src="date-range-picker.js"></script>
    <script src="http://momentjs.com/downloads/moment.js"></script>
-   <script src="script.js"></script>
+   <script src="calendar.js"></script>
    <link rel="stylesheet" href="tiny-date-picker.css">
    <link rel="stylesheet" href="date-range-picker.css">
 
