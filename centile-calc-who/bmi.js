@@ -102,14 +102,13 @@ function getRandomColor() {
 //@param {number} z_bmi - BMI Z score.
 //@returns {string} Interpretation of the BMI.
 const interpretBMI = (age, z_bmi) => {
+  let info = "<br><span class='BMI-criteria'>Based on WHO definitions</span>"
   if (age > 1857) { // Above 5 years old
-      return z_bmi > 2 ? "Obese" : z_bmi > 1 ? "Overweight" : z_bmi < -3 ? "Severe Thinness" : z_bmi < -2 ? "Thinness" : "Normal";
-  } else if (age > 730 && age <= 1857) { // Ages 2 - 5
-      return z_bmi > 3 ? "Obese" : z_bmi > 1.35 ? "Overweight" : z_bmi < -3 ? "Severe Thinness" : z_bmi < -2 ? "Thinness" : "Normal";
-  } else { // Age < 2
-      return "N/A for age < 2";
+      return z_bmi > 2 ? "Obese" + info : z_bmi > 1 ? "Overweight" + info : z_bmi < -2 ? "Underweight" + info  : "Normal" + info ;
+  } else if (age <= 1857) { // Ages birth - 5
+      return z_bmi > 3 ? "Obese" + info : z_bmi > 2 ? "Overweight" + info : z_bmi < -2 ? "Underweight" + info  : "Normal" + info ;
+  } 
 
-  }
 };
 
 
@@ -274,7 +273,7 @@ const factorial = (n) => {
   return fact;
 };
 
-//Cubic Interpolation (not used)
+//Cubic Interpolation
 // Currently the tool uses nearest age for L, M, and S values, while the reference standard suggests using cubic interpolation if your data points do not fall exactly on the given ages. 
 // Could apply cubic interpolation to get accurate values whenever need L, M, and S values
 // Would need to handle situation where age falls close to reference threshold, and use linear interpolation
@@ -613,7 +612,7 @@ function processAndUpdateChartData(age, measurement, centileDataset, chartId) {
         callback: function(value) {
             if (age <= 1857) { 
                 // Convert days to months and show every 3 months for ages 0-5
-                const month = Math.round(value / 30.44);
+                const month = Math.round(value / 30.4375);
                 return month % 3 === 0 ? month : undefined;
             } else {
                 // Show every year for ages 5-19
@@ -621,7 +620,7 @@ function processAndUpdateChartData(age, measurement, centileDataset, chartId) {
                 return year;
             }
         },
-        stepSize: age <= 1857 ? 30.44 * 3 : 365.25, // Step size adjusted for both age groups
+        stepSize: age <= 1857 ? 30.4375 * 3 : 365.25, // Step size adjusted for both age groups
         autoSkip: false, // Disable auto-skipping of ticks
     };
 
@@ -636,7 +635,7 @@ function processAndUpdateChartData(age, measurement, centileDataset, chartId) {
   });
 
   // Process and add centile lines
-  const centiles = [0.4, 2, 9, 25, 50, 75, 91, 98, 99.6]; // Define required centiles
+  const centiles = [3, 10, 25, 50, 75, 90, 97]; // Define required centiles
   centiles.forEach(centile => {
       const sampledCentileLine = centileDataset.filter((entry, index) => {
           // Sample the data (every 12th entry for age <= 5 years, every entry for age > 5 years)

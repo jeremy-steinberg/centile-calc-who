@@ -144,7 +144,7 @@ input{
 
 
 
-   .z-score, .centile-range {
+.z-score, .centile-range, .BMI-criteria {
     font-style: italic;
     font-size: 0.8rem;
   }

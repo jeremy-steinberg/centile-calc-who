@@ -14,7 +14,7 @@ const dp = TinyDatePicker('.date-of-birth', {
     },
 
     // 'dp-modal' displays the picker as a modal, 'dp-below' displays the date picker as a dropdown
-    mode: 'dp-modal',
+    mode: 'dp-below',
 
     // set maximum date to Today
     max: new Date(),
@@ -37,7 +37,7 @@ parse(str) {
 },
 
 // 'dp-modal' displays the picker as a modal, 'dp-below' displays the date picker as a dropdown
-mode: 'dp-modal',
+mode: 'dp-below',
 
 // set maximum date to Today
 max: new Date(),
