@@ -571,16 +571,35 @@ function initializeChart(chartId, label) {
 }
 
 // Function to update the chart with new data
-// Function to update BMI, Weight, and Height charts with new data
 function updateCharts(age, bmi, weight, height) {
   // Get the selected gender
   const selectedGender = getGender();
 
+  let centileHeading = document.getElementById("centileHeading").innerHTML;
+
+  if (selectedGender == "female") {
+    centileHeading = "Girls Centile Charts";
+    document.getElementById("centileHeading").style.color = "#f448a3";
+  } else if (selectedGender == "male") {
+    centileHeading = "Boys Centile Charts";
+    document.getElementById("centileHeading").style.color = "#009cd5";
+  }
+
+  if (age > 1857) { // Above 5 years old
+    centileHeading += "<br><span style='font-size:0.8em'>5-19 years</span>"
+  } else if (age <= 1857) { // Ages birth - 5
+    centileHeading += "<br><span style='font-size:0.8em'>0-5 years</span>";
+  }
+
+  // Update the innerHTML of the centileHeading element
+  document.getElementById("centileHeading").innerHTML = centileHeading;
+  
   // Update each chart with the relevant data
   updateChart(age, bmi, 'bmiChart', 'bmi_data_WHO_0_5', 'bmi_data_WHO_5_19', selectedGender);
   updateChart(age, weight, 'weightChart', 'weight_data_WHO_0_5', 'weight_data_WHO_5_19', selectedGender);
   updateChart(age, height, 'heightChart', 'height_data_WHO_0_5', 'height_data_WHO_5_19', selectedGender);
 }
+
 
 // Helper function to update a specific chart
 function updateChart(age, measurement, chartId, dataKeyUnder5, dataKeyOver5, selectedGender) {
