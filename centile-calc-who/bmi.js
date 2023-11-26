@@ -261,15 +261,11 @@ const getMeasurementFromZ = (z, L, M, S) => {
   return L !== 0 ? Math.pow(z * L * S + 1, 1 / L) * M : M * Math.exp(S * z);
 };
 
-
-
 //  function to calculate centile value
 function calculateCentileValue(entry, centile) {
   const zScore = getZScoreFromPercentile(centile / 100);
   return getMeasurementFromZ(zScore, entry.l, entry.m, entry.s);
 }
-
-
 
 // Convert a percentile into a Z score
 function getZScoreFromPercentile(percentile) {
@@ -292,9 +288,7 @@ function getZScoreFromPercentile(percentile) {
 }
 
 
-
 // Calculates BMI. @param {number} weight - The weight in kilograms. @param {number} height - The height in centimeters.
-// @returns {number} The calculated BMI.
 const calculateBMI = (weight, height) => weight / (height / 100) ** 2;
 
 // Basic pluralization utility function. 

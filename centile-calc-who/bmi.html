@@ -20,13 +20,15 @@
     
     <div id="infoBar" style="display: none;">
             <ul>
-                <li>There are no normative data for the NZ population. So this uses the standard WHO data in which NZ was not a participating country</li>
-                <li>Z scores and centiles are calculated using associated LMS values for age. If there is no data point for the age then cubic interpolation is used (Cole method).</li>
-                <li>Age is normalised to decimal age in years to account for leap years</li>
-                <li>The reason for the drop in height and BMI curves at 24 months is due to data changing from lying (length) to standing (height). The reason for the change in weight curves at age 10 is due to change in datasets. Convert from height to length by adding 0.7cm and vice versa if needed (e.g. if measured standing height rather than length in a child under 2).</li>
-                <li>The WHO no longer provide weight-for-age data for ages 10-19. Many health providers disagree with this exclusion. This calculator uses the WHO data published by CPEG for this dataset.</li>                
+                <li>Datasets and Calculation</li>
+                    <ul>
+                        <li>There is no dataset for the NZ population. So this calculator uses the WHO data in which NZ was not a participating country. This data represents optimal conditions for developing nations in exclusively breastfed infants with mothers who don't smoke.</li>
+                        <li>Discontinuity in height and BMI curves at 24 months: This is due to measurement method changing from lying (length) to standing (height). Convert from height to length by adding 0.7cm and vice versa if needed (e.g. if measured standing height rather than length in a child under 2).</li>
+                        <li>Discontinuity of weight curves at age 10: This is due to merging of datasets. The WHO no longer provide weight-for-age data for ages 10-19, and have never publically released MGRS data (0-5). Only the NCHS data are public domain. Many health providers disagree with the exclusion of ages 10-19. For ages 10-19 this calculator uses the WHO data published by CPEG which is from the NCHS but excludes MGRS. The CPEG revision was approved by WHO.</li>                
+                        <li>Z scores and centiles are calculated using associated LMS values for age. Age is normalised to decimal age in years to account for leap years. If there is no data point for the age then cubic interpolation is used (Cole method).</li>
+                    </ul>
                 <li>Being born at 37-42 weeks gestation is generally considered "term" and so just put in the birth date. However some prefer to adjust for gestation up to around 8 months.</li>
-                <li>This tool doesn't currently support calculations for preterm infants (born before 37 weeks) as the WHO study excluded them. Other study data are used for preterm charts in NZ and overseas, but I haven't been able to source the statistical data.</li>
+                <li>This tool doesn't currently support calculations for preterm infants (born before 37 weeks) as the WHO study excluded them. Other study data are used for preterm charts in NZ and overseas, but I've yet to source the statistical data.</li>
                 <li>References: <a href="https://www.tewhatuora.govt.nz/for-the-health-sector/specific-life-stage-health-information/child-health/well-child-tamariki-programme/growth-charts">NZ-WHO</a>, <a href="https://www.who.int/tools/child-growth-standards">WHO Child Growth Standards for 0-5</a>, <a href="https://www.who.int/tools/growth-reference-data-for-5to19-years">WHO Child Growth Standards for 5-19</a>, <a href="https://cpeg-gcep.net/content/who-growth-charts-canada">CPEG WHO Growth Charts</a>, <a href="https://growth.rcpch.ac.uk/clinician/how-the-api-works#prematurity-and-term">RCPH Info</a></li>
             </ul>
     </div>
