@@ -1,12 +1,10 @@
 //TODO
 
 //complete healthy weight range function by researching and finding out what is the WHO healthy weight range.
-//add data points
-//height velocities
+//add data points, i.e. plotting ability
 //Modify labelling, when hovering over a centile line should just show the name of the line
-// Take inspiration from: https://growth.rcpch.ac.uk/
-// Math info to cross reference: https://growth.rcpch.ac.uk/clinician/how-the-api-works
-// Add correction for gestation
+// Add correction for gestation option
+// add preterm baby data
 // Zoom and pan function for charts
 // Colors of lines - if manage to label things properly, then make pink for girls and blue for boys and alternate solid and dashed lines
 /*
@@ -30,8 +28,12 @@ const fetchCentileData = async () => {
     }
 };
 
-window.onload = fetchCentileData; // Fetch data when the window loads
 
+// Initialize the chart when the window loads
+window.onload = () => {
+  fetchCentileData();
+  initializeCharts();
+};
 
 
   
@@ -43,8 +45,6 @@ window.onload = fetchCentileData; // Fetch data when the window loads
 const getGender = () => document.querySelector('input[name="gender"]:checked').value;
 
 // Calculates the age in days, human-readable format, and decimal years based on DOB and DOM.
-// @returns {[number, string, number]} Age in days and human-readable age.
-// The decimalAge accounts for leap years.
 const calculateAge = () => {
   const DOBValue = document.getElementById('DOB').value;
   const DOMValue = document.getElementById('DOM').value;
@@ -59,9 +59,6 @@ const calculateAge = () => {
 };
 
 //Converts age from date format to a human-readable format (years, months, days).
-//@param {moment} DOB - Date of birth.
-//@param {moment} DOM - Date of measurement.
-//@returns {string} Human-readable age.
 const convertToYearsOld = (DOB, DOM) => {
   const years = DOM.diff(DOB, 'years');
   DOB.add(years, 'years');
@@ -98,9 +95,6 @@ function getRandomColor() {
 }
 
 //Interprets BMI based on age and Z score.
-//@param {number} age - Age in days.
-//@param {number} z_bmi - BMI Z score.
-//@returns {string} Interpretation of the BMI.
 const interpretBMI = (age, z_bmi) => {
   let info = "<br><span class='BMI-criteria'>Based on WHO definitions</span>"
   if (age > 1857) { // Above 5 years old
@@ -139,7 +133,7 @@ const healthyWeightRange = (L, M, S, height) => {
 
 
 
-
+//toggle the info bar for more information for the user
 function toggleInfoBar() {
   var infoBar = document.getElementById("infoBar");
   var toggleButton = document.querySelector("button[onclick='toggleInfoBar()']");
@@ -169,15 +163,24 @@ function toggleInfoBar() {
 */
 
 
-// The two below functions parse the 0-5 year old and 5-19 year old datasets and returns the LMS values in an array.
+// parse the 0-5 year old and 5-19 year old datasets and returns the LMS values in an array.
 // It uses cubic interpolation if not exactly at a reference point.
-// @param {string} dataType - The data type (e.g., 'bmi_data_WHO_0_5').
-// @param {number} age_days - Age in days.
-// @param {string} gender - Gender ('male' or 'female').
-// @returns {[number, number, number]} LMS values.
-const getLMSValues_0_5 = (dataType, age_days, gender) => {
-  const array = centileData[dataType];
-  const entry = array.find(item => item.gender === gender && item.age_days === age_days);
+const getLMSValues = (dataType, age_days, gender) => {
+  let entry;
+  let array;
+
+  if (age_days < 1857) { // Age 0-5 years
+    dataType = dataType + "_0_5";
+    array = centileData[dataType];
+    entry = array.find(item => item.gender === gender && item.age_days === age_days);
+  } else if (age_days <= 7000) { // Age 5-19 years
+    dataType = dataType + "_5_19";
+    array = centileData[dataType];
+    entry = array.find(item => item.gender === gender && item.age_days === age_days);
+  } else {
+    showError("Age out of range.");
+    return;
+  }
 
   if (entry) {
     return [entry.l, entry.m, entry.s];
@@ -187,62 +190,34 @@ const getLMSValues_0_5 = (dataType, age_days, gender) => {
       .sort((a, b) => Math.abs(age_days - a) - Math.abs(age_days - b))
       .slice(0, 4);
 
-    const [t0, t1, t2, t3] = closestAges;
-    const [y0_l, y0_m, y0_s] = getLMS(dataType, t0, gender);
-    const [y1_l, y1_m, y1_s] = getLMS(dataType, t1, gender);
-    const [y2_l, y2_m, y2_s] = getLMS(dataType, t2, gender);
-    const [y3_l, y3_m, y3_s] = getLMS(dataType, t3, gender);
+      const [t0, t1, t2, t3] = closestAges;
 
-    const l = cubicInterpolation(age_days, t0, t1, t2, t3, y0_l, y1_l, y2_l, y3_l);
-    const m = cubicInterpolation(age_days, t0, t1, t2, t3, y0_m, y1_m, y2_m, y3_m);
-    const s = cubicInterpolation(age_days, t0, t1, t2, t3, y0_s, y1_s, y2_s, y3_s);
-
-    return [l, m, s];
-  }
-};
-
-const getLMSValues_5_19 = (dataType, age_months, gender) => {
-  const array = centileData[dataType];
-  const entry = array.find(item => item.gender === gender && item.age_months === age_months);
-
-  if (entry) {
-    return [entry.l, entry.m, entry.s];
-  } else {
-    const closestAges = array.filter(item => item.gender === gender)
-      .map(item => item.age_months)
-      .sort((a, b) => Math.abs(age_months - a) - Math.abs(age_months - b))
-      .slice(0, 4);
-
-    const [t0, t1, t2, t3] = closestAges;
-    const [y0_l, y0_m, y0_s] = getLMS(dataType, t0, gender);
-    const [y1_l, y1_m, y1_s] = getLMS(dataType, t1, gender);
-    const [y2_l, y2_m, y2_s] = getLMS(dataType, t2, gender);
-    const [y3_l, y3_m, y3_s] = getLMS(dataType, t3, gender);
-
-    const l = cubicInterpolation(age_months, t0, t1, t2, t3, y0_l, y1_l, y2_l, y3_l);
-    const m = cubicInterpolation(age_months, t0, t1, t2, t3, y0_m, y1_m, y2_m, y3_m);
-    const s = cubicInterpolation(age_months, t0, t1, t2, t3, y0_s, y1_s, y2_s, y3_s);
-
-    return [l, m, s];
+      const y0Entry = array.find(item => item.gender === gender && item.age_days === t0);
+      const y1Entry = array.find(item => item.gender === gender && item.age_days === t1);
+      const y2Entry = array.find(item => item.gender === gender && item.age_days === t2);
+      const y3Entry = array.find(item => item.gender === gender && item.age_days === t3);
+      
+      const [y0_l, y0_m, y0_s] = [y0Entry.l, y0Entry.m, y0Entry.s];
+      const [y1_l, y1_m, y1_s] = [y1Entry.l, y1Entry.m, y1Entry.s];
+      const [y2_l, y2_m, y2_s] = [y2Entry.l, y2Entry.m, y2Entry.s];
+      const [y3_l, y3_m, y3_s] = [y3Entry.l, y3Entry.m, y3Entry.s];
+      
+      const l = cubicInterpolation(age_days, t0, t1, t2, t3, y0_l, y1_l, y2_l, y3_l);
+      const m = cubicInterpolation(age_days, t0, t1, t2, t3, y0_m, y1_m, y2_m, y3_m);
+      const s = cubicInterpolation(age_days, t0, t1, t2, t3, y0_s, y1_s, y2_s, y3_s);
+      
+      return [l, m, s];
   }
 };
 
 
 //Calculates the Z score based on the measurement and LMS values.
-//@param {number} measurement - The measurement (e.g., BMI, weight, height).
-//@param {number} L - L value from LMS data.
-//@param {number} M - M value from LMS data.
-//@param {number} S - S value from LMS data.
-//@returns {number} The Z score.
 const getZScoreFromLMS = (measurement, L, M, S) => {
   return L !== 0 ? (Math.pow(measurement / M, L) - 1) / (L * S) : Math.log(measurement / M) / S;
 };
 
 
 // Converts a Z score to a percentile (fraction of 1, e.g. 0.5, so 50th centile is represented as 0.5).
-// @param {number} z - The Z score.
-// @returns {number} The percentile.
-
 const getPercentileFromZScore = (z) => {
   if (z < -6.5) return 0.0;
   if (z > 6.5) return 1.0;
@@ -263,8 +238,6 @@ const getPercentileFromZScore = (z) => {
 
 
 //Calculates factorial of a number.
-//@param {number} n - The number.
-//@returns {number} Factorial of n.
 const factorial = (n) => {
   let fact = 1;
   for (let i = 2; i <= n; i++) {
@@ -274,9 +247,6 @@ const factorial = (n) => {
 };
 
 //Cubic Interpolation
-// Currently the tool uses nearest age for L, M, and S values, while the reference standard suggests using cubic interpolation if your data points do not fall exactly on the given ages. 
-// Could apply cubic interpolation to get accurate values whenever need L, M, and S values
-// Would need to handle situation where age falls close to reference threshold, and use linear interpolation
 const cubicInterpolation = (t, t0, t1, t2, t3, y0, y1, y2, y3) => {
   return (y0 * (t - t1) * (t - t2) * (t - t3)) / ((t0 - t1) * (t0 - t2) * (t0 - t3))
        + (y1 * (t - t0) * (t - t2) * (t - t3)) / ((t1 - t0) * (t1 - t2) * (t1 - t3))
@@ -287,11 +257,6 @@ const cubicInterpolation = (t, t0, t1, t2, t3, y0, y1, y2, y3) => {
 
 
 //Calculates measurement from a Z score.
-//@param {number} z - The Z score.
-//@param {number} L - L value from LMS data.
-//@param {number} M - M value from LMS data.
-//@param {number} S - S value from LMS data.
-// @returns {number} The corresponding measurement.
 const getMeasurementFromZ = (z, L, M, S) => {
   return L !== 0 ? Math.pow(z * L * S + 1, 1 / L) * M : M * Math.exp(S * z);
 };
@@ -378,23 +343,9 @@ const handleCalculateClick = () => {
   }
 
   let lms_bmi, lms_wt, lms_ht;
-  if (decimalAgeYears < 5 * 365.25) { // Age 0-5 years
-    lms_bmi = getLMSValues_0_5('bmi_data_WHO_0_5', ageInDays, gender);
-    lms_wt = getLMSValues_0_5('weight_data_WHO_0_5', ageInDays, gender);
-    lms_ht = getLMSValues_0_5('height_data_WHO_0_5', ageInDays, gender);
-  } else if (decimalAgeYears <= 19 * 365.25) { // Age 5-19 years
-    const ageInMonths = Math.ceil(ageInDays / 30.4375);
-    lms_bmi = getLMSValues_5_19('bmi_data_WHO_5_19', ageInMonths, gender);
-    lms_wt = getLMSValues_5_19('weight_data_WHO_5_19', ageInMonths, gender);
-    lms_ht = getLMSValues_5_19('height_data_WHO_5_19', ageInMonths, gender);
-  } else {
-    showError("Age out of range.");
-    return;
-  }
-
-
-
-
+    lms_bmi = getLMSValues('bmi_data_WHO', ageInDays, gender);
+    lms_wt = getLMSValues('weight_data_WHO', ageInDays, gender);
+    lms_ht = getLMSValues('height_data_WHO', ageInDays, gender);
 
 
   const z_bmi = getZScoreFromLMS(BMI, lms_bmi[0], lms_bmi[1], lms_bmi[2]);
@@ -475,7 +426,6 @@ const setupEventListeners = () => {
 */ 
 
 // Displays calculation results in the user interface
-// Displays calculation results in the user interface
 const displayResult = (percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange, humanAge) => {
   // Update age display
   document.getElementById("result-age").innerHTML = humanAge;
@@ -495,8 +445,6 @@ const displayResult = (percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt
 
 
 // Formats a percentile for display.
-// @param {number} percentile - The percentile to format.
-// @returns {string} Formatted percentile.
 const formatPercentile = (percentile) => {
   return `${getOrdinalFor((percentile * 100).toFixed(0))} percentile`;
 };
@@ -504,7 +452,6 @@ const formatPercentile = (percentile) => {
 
 
 //Displays an error message.
-//@param {string} message - The error message to display.
 const showError = (message) => {
   const errorElement = document.getElementById("error-message");
   errorElement.innerHTML = message;
@@ -565,10 +512,14 @@ function initializeChart(chartId, label) {
                       text: label
                   }
               }
+          },
+          plugins: {
+              annotation: {} // Initialize annotation plugin
           }
       }
   });
 }
+
 
 // Function to update the chart with new data
 function updateCharts(age, bmi, weight, height) {
@@ -594,15 +545,37 @@ function updateCharts(age, bmi, weight, height) {
   // Update the innerHTML of the centileHeading element
   document.getElementById("centileHeading").innerHTML = centileHeading;
   
+  // Define annotation for age 2 (730 days) for ages 0-5
+  let annotation = {};
+  if (age <= 1857) { // Check if age is 5 years (1857 days) or less
+    annotation = {
+      annotations: {
+        line1: {
+          type: 'line',
+          xMin: 730, // Age 2 in days
+          xMax: 730,
+          borderColor: 'rgb(255, 99, 132)',
+          borderWidth: 1,
+          borderDash: [6, 6],
+          label: {
+            content: 'Change from measuring length to height after age 2',
+            enabled: true,
+            position: "start"
+          }
+        }
+      }
+    };
+  }
+
   // Update each chart with the relevant data
-  updateChart(age, bmi, 'bmiChart', 'bmi_data_WHO_0_5', 'bmi_data_WHO_5_19', selectedGender);
-  updateChart(age, weight, 'weightChart', 'weight_data_WHO_0_5', 'weight_data_WHO_5_19', selectedGender);
-  updateChart(age, height, 'heightChart', 'height_data_WHO_0_5', 'height_data_WHO_5_19', selectedGender);
+  updateChart(age, bmi, 'bmiChart', 'bmi_data_WHO_0_5', 'bmi_data_WHO_5_19', selectedGender, annotation);
+  updateChart(age, weight, 'weightChart', 'weight_data_WHO_0_5', 'weight_data_WHO_5_19', selectedGender, {});
+  updateChart(age, height, 'heightChart', 'height_data_WHO_0_5', 'height_data_WHO_5_19', selectedGender, annotation);
 }
 
 
 // Helper function to update a specific chart
-function updateChart(age, measurement, chartId, dataKeyUnder5, dataKeyOver5, selectedGender) {
+function updateChart(age, measurement, chartId, dataKeyUnder5, dataKeyOver5, selectedGender, annotationConfig) {
   // Determine the dataset to use based on age
   let centileDataset;
   if (age <= 1857) { // Age 5 years or below
@@ -616,6 +589,11 @@ function updateChart(age, measurement, chartId, dataKeyUnder5, dataKeyOver5, sel
 
   // Process and update the chart
   processAndUpdateChartData(age, measurement, centileDataset, chartId);
+
+  // Include annotation configuration in the chart
+  const chartConfig = window[chartId].config;
+  chartConfig.options.plugins.annotation = annotationConfig;
+  window[chartId].update(); // Update the chart with new data
 }
 
 // Function to process and update chart data
@@ -683,12 +661,3 @@ function processAndUpdateChartData(age, measurement, centileDataset, chartId) {
   chart.update(); // Update the chart with new data
 }
 
-
-
-
-
-// Initialize the chart when the window loads
-window.onload = () => {
-    fetchCentileData();
-    initializeCharts();
-};
