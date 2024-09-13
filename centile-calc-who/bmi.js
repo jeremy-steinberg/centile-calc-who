@@ -338,8 +338,8 @@
     };
   
     const centiles = [3, 10, 25, 50, 75, 90, 97];
-    const baseColor = gender === 'female' ? '#f448a3' : '#009cd5'; // Pink for girls, Blue for boys
-    const fiftiethCentileColor = gender === 'female' ? '#8E44AD' : '#1a5074'; // Different color for 50th centile
+    const baseColor = gender === 'female' ? '#f448a3' : '#009cd5';
+    const fiftiethCentileColor = gender === 'female' ? '#8E44AD' : '#1a5074';
   
     centiles.forEach((centile, index) => {
       const sampledData = centileDataset
@@ -359,7 +359,7 @@
         tension: 0.6,
         showLine: true,
         fill: false,
-        borderDash: index % 2 === 0 ? [] : [5, 5], // Alternate between solid and dashed lines
+        borderDash: index % 2 === 0 ? [] : [5, 5],
       });
     });
   
@@ -374,6 +374,25 @@
       pointRadius: 5,
       showLine: false,
     });
+  
+    // Update chart options to modify hover behavior
+    chart.options.plugins.tooltip = {
+      callbacks: {
+        title: (tooltipItems) => {
+          // Return only the dataset label (centile name) for centile lines
+          const datasetIndex = tooltipItems[0].datasetIndex;
+          return chart.data.datasets[datasetIndex].label;
+        },
+        label: (tooltipItem) => {
+          // Return an empty string to hide additional information for centile lines
+          if (tooltipItem.datasetIndex < centiles.length) {
+            return '';
+          }
+          // For patient's data points, show the full information
+          return `Age: ${tooltipItem.parsed.x} days, Value: ${tooltipItem.parsed.y.toFixed(2)}`;
+        }
+      }
+    };
   
     chart.update();
   }
