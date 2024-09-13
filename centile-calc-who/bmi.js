@@ -5,7 +5,6 @@
   // Add correction for gestation option
   // add preterm baby data
   // Zoom and pan function for charts
-  // Colors of lines - if manage to label things properly, then make pink for girls and blue for boys and alternate solid and dashed lines
 
   const centileData = {};
 
@@ -54,7 +53,9 @@
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
 
-  const getRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
+  function adjustColor(hex, amount) {
+    return '#' + hex.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+  }
 
   const interpretBMI = (age, z_bmi) => {
     const info = "<br><span class='BMI-criteria'>Based on WHO definitions</span>";
@@ -150,18 +151,26 @@
 
   const handleCalculateClick = () => {
     clearError();
-
+  
     const dobField = document.getElementById("DOB");
     dobField.disabled = true;
     dobField.style.backgroundColor = "#e0e0e0";
-
-    const [ageInDays, humanAge] = calculateAge();
+  
+    const [ageInDays, humanAge, decimalAge] = calculateAge();
     const weight = getWeight(), height = getHeight(), BMI = calculateBMI(weight, height);
     const gender = getGender();
     if (!ageInDays || ageInDays < 0 || !gender || !weight || !height) {
       showError("Please check your inputs.");
       return;
     }
+  
+    // Check if this data point already exists
+    const existingDataPoint = dataPoints.bmi.find(point => point.age === ageInDays);
+    if (existingDataPoint) {
+      showError("A data point for this age already exists. Please use a different date of measurement.");
+      return;
+    }
+  
     const lms_bmi = getLMSValues('bmi_data_WHO', ageInDays, gender);
     const lms_wt = getLMSValues('weight_data_WHO', ageInDays, gender);
     const lms_ht = getLMSValues('height_data_WHO', ageInDays, gender);
@@ -174,11 +183,12 @@
     const percentile_ht = getPercentileFromZScore(z_ht);
     const interpret_bmi = interpretBMI(ageInDays, z_bmi);
     const weightrange = healthyWeightRange(...lms_bmi, height);
-
+  
+    // Add the new data point
     dataPoints.bmi.push({ age: ageInDays, value: BMI });
     dataPoints.weight.push({ age: ageInDays, value: weight });
     dataPoints.height.push({ age: ageInDays, value: height });
-
+  
     updateCharts();
     displayResult(percentile_bmi, percentile_wt, percentile_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange, humanAge);
   };
@@ -207,6 +217,13 @@
     dataPoints.weight = [];
     dataPoints.height = [];
     updateCharts();
+    document.getElementById("result-age").innerHTML = "";
+    document.getElementById("result-bminumber").innerHTML = "";
+    document.getElementById("result-bmi").innerHTML = "";
+    document.getElementById("result-it").innerHTML = "";
+    document.getElementById("result-wt").innerHTML = "";
+    document.getElementById("result-wr").innerHTML = "";
+    document.getElementById("result-ht").innerHTML = "";
   }
 
   const displayResult = (p_bmi, p_wt, p_ht, z_bmi, z_wt, z_ht, interpret_bmi, weightrange, humanAge) => {
@@ -295,17 +312,17 @@
     const dataKey = maxAge <= 1857 ? dataKeyUnder5 : dataKeyOver5;
     const centileDataset = centileData[dataKey]?.filter(entry => entry.gender === gender);
     if (!centileDataset) return;
-    processAndUpdateChartData(dataPointsArray, centileDataset, chartId, maxAge);
+    processAndUpdateChartData(dataPointsArray, centileDataset, chartId, maxAge, gender);
     const chart = window[chartId];
     chart.options.plugins.annotation = annotationConfig;
     chart.update();
   }
 
-  function processAndUpdateChartData(dataPointsArray, centileDataset, chartId, maxAge) {
+  function processAndUpdateChartData(dataPointsArray, centileDataset, chartId, maxAge, gender) {
     const chart = window[chartId];
-
+  
     chart.data.datasets = [];
-
+  
     chart.options.scales.x.title.text = maxAge <= 1857 ? 'Age (Months)' : 'Age (Years)';
     chart.options.scales.x.ticks = {
       callback: value => {
@@ -319,41 +336,48 @@
       stepSize: maxAge <= 1857 ? 30.4375 * 3 : 365.25,
       autoSkip: false,
     };
-
+  
     const centiles = [3, 10, 25, 50, 75, 90, 97];
-    centiles.forEach(centile => {
+    const baseColor = gender === 'female' ? '#f448a3' : '#009cd5'; // Pink for girls, Blue for boys
+    const fiftiethCentileColor = gender === 'female' ? '#8E44AD' : '#1a5074'; // Different color for 50th centile
+  
+    centiles.forEach((centile, index) => {
       const sampledData = centileDataset
         .filter((_, i) => maxAge <= 1857 ? i % 12 === 0 : true)
         .sort((a, b) => a.age_days - b.age_days)
         .map(entry => ({ x: entry.age_days, y: calculateCentileValue(entry, centile) }));
+  
+      const color = centile === 50 ? fiftiethCentileColor : baseColor;
+      
       chart.data.datasets.push({
         label: `${getOrdinalFor(centile)} Centile`,
         data: sampledData,
-        borderColor: centile === 50 ? 'green' : getRandomColor(),
-        borderWidth: centile === 50 ? 3 : 1,
+        borderColor: color,
+        borderWidth: centile === 50 ? 3 : 2,
         pointRadius: 0.1,
         pointHitRadius: 10,
         tension: 0.6,
         showLine: true,
-        fill: false
+        fill: false,
+        borderDash: index % 2 === 0 ? [] : [5, 5], // Alternate between solid and dashed lines
       });
     });
-
+  
     const dataPointsData = dataPointsArray.map(dp => ({ x: dp.age, y: dp.value }));
     chart.data.datasets.push({
       label: `Patient's Data Points`,
       data: dataPointsData,
-      backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      borderColor: 'rgba(255, 99, 132, 1)',
+      backgroundColor: '#E74C3C',
+      borderColor: '#E74C3C',
       borderWidth: 1,
       type: 'scatter',
       pointRadius: 5,
       showLine: false,
     });
-
+  
     chart.update();
   }
-
+  
   const calculateCentileValue = (entry, centile) => {
     const z = getZScoreFromPercentile(centile / 100);
     return getMeasurementFromZ(z, entry.l, entry.m, entry.s);
